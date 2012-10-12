@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ss:Workbook xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html40" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  <ss:Styles>
+    <ss:Style ss:ID="Default" ss:Name="Normal">
+      <ss:Font ss:FontName="Verdana"/>
+    </ss:Style>
+    <ss:Style ss:ID="Header" ss:Parent="Default">
+      <ss:Font ss:Bold="1"/>
+    </ss:Style>
+    <ss:Style ss:ID="Link" ss:Parent="Default">
+      <ss:Font ss:Color="#0000D4" ss:Underline="Single"/>
+    </ss:Style>
+  </ss:Styles>
+  <ss:Worksheet ss:Name="Sheet1">
+    <ss:Table>
+      <ss:Column/>
+      <ss:Row ss:StyleID="Header">
+        <ss:Cell>
+          <ss:Data ss:Type="String">Test</ss:Data>
+        </ss:Cell>
+        <ss:Cell>
+          <ss:Data ss:Type="String">Foo Col</ss:Data>
+        </ss:Cell>
+        <ss:Cell>
+          <ss:Data ss:Type="String">Column Three</ss:Data>
+        </ss:Cell>
+      </ss:Row>
+      <ss:Row>
+        <ss:Cell>
+          <ss:Data ss:Type="String">This is my test</ss:Data>
+        </ss:Cell>
+        <ss:Cell>
+          <ss:Data ss:Type="Number">12</ss:Data>
+        </ss:Cell>
+      </ss:Row>
+      <ss:Row>
+        <ss:Cell ss:StyleID="Link" ss:HRef="http://example.com">
+          <ss:Data ss:Type="String">Row 2</ss:Data>
+        </ss:Cell>
+        <ss:Cell ss:Index="3">
+          <ss:Data ss:Type="String">Hi!</ss:Data>
+        </ss:Cell>
+      </ss:Row>
+      <ss:Row>
+        <ss:Cell>
+          <ss:Data ss:Type="String">Row 3</ss:Data>
+        </ss:Cell>
+        <ss:Cell>
+          <ss:Data ss:Type="Number">14</ss:Data>
+          <ss:Comment>
+            <ss:Data>Not really sure on this one...</ss:Data>
+          </ss:Comment>
+        </ss:Cell>
+        <ss:Cell>
+          <ss:Data ss:Type="String">Howdy!</ss:Data>
+        </ss:Cell>
+      </ss:Row>
+    </ss:Table>
+    <x:AutoFilter x:Range="R1C1:R3C3"/>
+  </ss:Worksheet>
+</ss:Workbook>
