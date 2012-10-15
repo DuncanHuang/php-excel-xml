@@ -30,10 +30,21 @@ class ExcelXML {
 		$this->headers = $headers;
 	}
 	
+	function out($format = 'xml', $minify = false) {
+		$format = strtolower($format);
+		switch($format) {
+			case 'ooxml':
+				return $this->_out_ooxml($minify);
+			default:
+				return $this->_out_xml($minify);
+		}
+	}
+	
 	/**
 	 * Generate the XML and return it
+	 * @return string XML string
 	 */
-	function out($minify = false) {
+	private function _out_xml($minify = false) {
 		$xml = new XmlWriter();
 		$xml->openMemory(); // Store in memory, not output immediately
 		
@@ -144,6 +155,133 @@ class ExcelXML {
 		$xml->endDocument();
 		$xml = $xml->outputMemory(); // Create output, and reclaim memory of XMLWriter object
 		return $xml;
+	}
+	
+	/**
+	 * Export in the Office Open XML format
+	 *
+	 * @link http://en.wikipedia.org/wiki/Office_Open_XML
+	 * @return string filename where the temporary file was stored
+	 */
+	private function _out_ooxml($minify = false) {
+		$file = tempnam(sys_get_temp_dir(), 'ooxml_');
+		$z = new ZipArchive();
+		$z->open($file);
+		$z->addEmptyDir('_rels');
+		$z->addEmptyDir('xl');
+		$z->addEmptyDir('xl/_rels');
+		$z->addEmptyDir('xl/worksheets');
+		$z->addEmptyDir('docProps');
+
+		// [Content Types].xml
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNS(null, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
+		$this->_buildElement($xml, 'Default', array('Extension' => 'xml', 'ContentType' => 'application/xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/workbook.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/worksheets/sheet1.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Default', array('Extension' => 'rels', 'ContentType' => 'application/vnd.openxmlformats-package.relationships+xml'));
+		$xml->endDocument(); // end Types
+		$z->addFromString('[Content_Types].xml', $xml->outputMemory());
+
+		// xl/_refs/workbook.xml.refs
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNs(null, 'Relationships', 'http://schemas.openxmlformats.org/package/2006/relationships');
+		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId1', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet', 'Target' => 'worksheets/sheet1.xml'));
+		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId2', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles', 'Target' => 'styles.xml'));
+		$xml->endElement(); // end Relationships
+		$xml->endDocument();
+		$z->addFromString('xl/_rels/workbook.xml.rels', $xml->outputMemory());
+		
+		// xl/styles.xml
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNs(null, 'styleSheet', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+		
+		$xml->startElement('fonts');
+		$xml->startElement('font');
+		$this->_buildElement($xml, 'sz', array('val' => '12'));
+		$this->_buildElement($xml, 'color', array('theme' => '1'));
+		$this->_buildElement($xml, 'name', array('val' => 'Verdana'));
+		$xml->endElement(); // end font
+		$xml->startElement('font');
+		$xml->writeElement('b');
+		$this->_buildElement($xml, 'sz', array('val' => '12'));
+		$this->_buildElement($xml, 'color', array('theme' => '1'));
+		$this->_buildElement($xml, 'name', array('val' => 'Verdana'));
+		$xml->endElement(); // end font
+		$xml->endElement(); // end fonts
+		
+		$xml->startElement('cellStyles');
+		$this->_buildElement($xml, 'cellStyle', array('name' => 'Normal', 'xfId' => '0', 'builtinId' => '0'));
+		$xml->endElement(); // end cellStyles
+		
+		$xml->startElement('cellXfs');
+		$this->_buildElement($xml, 'xf', array('fontId' => '0', 'xfId' => '0'));
+		$this->_buildElement($xml, 'xf', array('fontId' => '1', 'xfId' => '0'));
+		$xml->endElement(); // end cellXfs
+		
+		$xml->startElement('cellStyleXfs');
+		$this->_buildElement($xml, 'xf', array('fontId' => '0'));
+		$xml->endElement(); // end cellStyleXfs
+		
+		$xml->endElement(); // end styleSheet
+		$xml->endDocument();
+		$z->addFromString('xl/styles.xml', $xml->outputMemory());
+		
+		// xl/workbook.xml
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNS(null, 'workbook', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+		$xml->writeAttributeNS('xmlns', 'r', null, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+		$xml->startElement('sheets');
+		$this->_buildElement($xml, 'sheet', array('name' => $this->name, 'r:id' => 'rId1'));
+		$xml->endElement(); // end sheets
+		$xml->endElement(); // end workbook
+		$xml->endDocument();
+		$z->addFromString('xl/workbook.xml', $xml->outputMemory());
+		
+		// xl/worksheets/sheet1.xml
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNS(null, 'worksheet', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+		$xml->writeAttributeNS('xmlns', 'r', null, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
+		$xml->writeAttributeNS('xmlns', 'mc', null, 'http://schemas.openxmlformats.org/markup-compatibility/2006');
+		$xml->startElement('sheetData');
+
+		// Draw headers
+		$xml->startElement('row');
+		foreach($this->headers as $header) {
+			$xml->startElement('c');
+			$xml->writeAttribute('t', 's');
+			$xml->writeElement('v', $header->data);
+			$xml->endElement(); // end c
+		}
+		$xml->endElement(); // end row		
+
+		$xml->endElement(); // end sheetData
+		$xml->endDocument();
+		$z->addFromString('xl/worksheets/sheet1.xml', $xml->outputMemory());
+
+		
+		$z->close(); // Save zip
+		return $file; // Return location of file
+	}
+	
+	private function _buildElement($xml, $name, $attrs = array(), $content = null) {
+		$xml->startElement($name);
+		foreach($attrs as $n => $v) {
+			$xml->writeAttribute($n, $v);
+		}
+		if ($content !== null) $xml->text($content);
+		$xml->endElement();
 	}
 }
 
