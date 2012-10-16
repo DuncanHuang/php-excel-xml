@@ -171,7 +171,6 @@ class ExcelXML {
 		$z->addEmptyDir('xl');
 		$z->addEmptyDir('xl/_rels');
 		$z->addEmptyDir('xl/worksheets');
-		$z->addEmptyDir('docProps');
 
 		// [Content Types].xml
 		$xml = new XmlWriter();
@@ -217,30 +216,28 @@ class ExcelXML {
 		
 		$xml->startElement('fonts');
 		$xml->startElement('font');
-		$this->_buildElement($xml, 'sz', array('val' => '12'));
-		$this->_buildElement($xml, 'color', array('theme' => '1'));
-		$this->_buildElement($xml, 'name', array('val' => 'Verdana'));
+		$this->_buildElement($xml, 'sz', array('val' => '10'));
+		$this->_buildElement($xml, 'name', array('val' => 'Arial'));
 		$xml->endElement(); // end font
 		$xml->startElement('font');
 		$xml->writeElement('b');
-		$this->_buildElement($xml, 'sz', array('val' => '12'));
-		$this->_buildElement($xml, 'color', array('theme' => '1'));
-		$this->_buildElement($xml, 'name', array('val' => 'Verdana'));
+		$this->_buildElement($xml, 'sz', array('val' => '10'));
+		$this->_buildElement($xml, 'name', array('val' => 'Arial'));
 		$xml->endElement(); // end font
 		$xml->endElement(); // end fonts
-		
-		$xml->startElement('cellStyles');
-		$this->_buildElement($xml, 'cellStyle', array('name' => 'Normal', 'xfId' => '0', 'builtinId' => '0'));
-		$xml->endElement(); // end cellStyles
-		
-		$xml->startElement('cellXfs');
-		$this->_buildElement($xml, 'xf', array('fontId' => '0', 'xfId' => '0'));
-		$this->_buildElement($xml, 'xf', array('fontId' => '1', 'xfId' => '0'));
-		$xml->endElement(); // end cellXfs
 		
 		$xml->startElement('cellStyleXfs');
 		$this->_buildElement($xml, 'xf', array('fontId' => '0'));
 		$xml->endElement(); // end cellStyleXfs
+		
+		$xml->startElement('cellXfs');
+		$this->_buildElement($xml, 'xf', array('fontId' => '0', 'xfId' => '0'));
+		$this->_buildElement($xml, 'xf', array('fontId' => '1', 'xfId' => '0', 'applyFont' => '1'));
+		$xml->endElement(); // end cellXfs
+		
+		$xml->startElement('cellStyles');
+		$this->_buildElement($xml, 'cellStyle', array('name' => 'Normal', 'xfId' => '0', 'builtinId' => '0'));
+		$xml->endElement(); // end cellStyles
 		
 		$xml->endElement(); // end styleSheet
 		$xml->endDocument();
