@@ -179,9 +179,9 @@ class ExcelXML {
 		$xml->startDocument('1.0', 'UTF-8');
 		$xml->startElementNS(null, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
 		$this->_buildElement($xml, 'Default', array('Extension' => 'xml', 'ContentType' => 'application/xml'));
-		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/workbook.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
-		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
-		$this->_buildElement($xml, 'Override', array('PartName' => 'xl/worksheets/sheet1.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/workbook.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/worksheets/sheet1.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
 		$this->_buildElement($xml, 'Default', array('Extension' => 'rels', 'ContentType' => 'application/vnd.openxmlformats-package.relationships+xml'));
 		$xml->endDocument(); // end Types
 		$z->addFromString('[Content_Types].xml', $xml->outputMemory());
