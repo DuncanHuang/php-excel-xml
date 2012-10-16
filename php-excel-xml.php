@@ -180,6 +180,7 @@ class ExcelXML {
 		$xml->startElementNS(null, 'Types', 'http://schemas.openxmlformats.org/package/2006/content-types');
 		$this->_buildElement($xml, 'Default', array('Extension' => 'xml', 'ContentType' => 'application/xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/workbook.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/sharedStrings.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/worksheets/sheet1.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
 		$this->_buildElement($xml, 'Default', array('Extension' => 'rels', 'ContentType' => 'application/vnd.openxmlformats-package.relationships+xml'));
@@ -203,6 +204,7 @@ class ExcelXML {
 		$xml->startElementNs(null, 'Relationships', 'http://schemas.openxmlformats.org/package/2006/relationships');
 		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId1', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet', 'Target' => 'worksheets/sheet1.xml'));
 		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId2', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles', 'Target' => 'styles.xml'));
+		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId3', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings', 'Target' => 'sharedStrings.xml'));
 		$xml->endElement(); // end Relationships
 		$xml->endDocument();
 		$z->addFromString('xl/_rels/workbook.xml.rels', $xml->outputMemory());
@@ -251,11 +253,25 @@ class ExcelXML {
 		$xml->startElementNS(null, 'workbook', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
 		$xml->writeAttributeNS('xmlns', 'r', null, 'http://schemas.openxmlformats.org/officeDocument/2006/relationships');
 		$xml->startElement('sheets');
-		$this->_buildElement($xml, 'sheet', array('name' => $this->name, 'r:id' => 'rId1'));
+		$this->_buildElement($xml, 'sheet', array('name' => $this->name, 'sheetId' => '1', 'r:id' => 'rId1'));
 		$xml->endElement(); // end sheets
 		$xml->endElement(); // end workbook
 		$xml->endDocument();
 		$z->addFromString('xl/workbook.xml', $xml->outputMemory());
+		
+		// xl/sharedStrings.xml
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNS(null, 'sst', 'http://schemas.openxmlformats.org/spreadsheetml/2006/main');
+		foreach($this->headers as $header) {
+			$xml->startElement('si');
+			$xml->writeElement('t', $header->data);
+			$xml->endElement(); // end si
+		}
+		$xml->endElement(); // end sst
+		$xml->endDocument();
+		$z->addFromString('xl/sharedStrings.xml', $xml->outputMemory());
 		
 		// xl/worksheets/sheet1.xml
 		$xml = new XmlWriter();
@@ -268,10 +284,11 @@ class ExcelXML {
 
 		// Draw headers
 		$xml->startElement('row');
-		foreach($this->headers as $header) {
+		for ($i = 0; $i<count($this->headers); $i++) {
 			$xml->startElement('c');
-			$xml->writeAttribute('t', 's');
-			$xml->writeElement('v', $header->data);
+			$xml->writeAttribute('t', 's'); // Type is 'string'
+			$xml->writeAttribute('s', '1'); // Bold style
+			$xml->writeElement('v', $i); // Which string index
 			$xml->endElement(); // end c
 		}
 		$xml->endElement(); // end row		
