@@ -186,6 +186,16 @@ class ExcelXML {
 		$xml->endDocument(); // end Types
 		$z->addFromString('[Content_Types].xml', $xml->outputMemory());
 
+		// _refs/.refs
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNs(null, 'Relationships', 'http://schemas.openxmlformats.org/package/2006/relationships');
+		$this->_buildElement($xml, 'Relationship', array('Id' => 'rId1', 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument', 'Target' => 'xl/workbook.xml'));
+		$xml->endElement(); // end Relationships
+		$xml->endDocument();
+		$z->addFromString('_rels/.rels', $xml->outputMemory());
+		
 		// xl/_refs/workbook.xml.refs
 		$xml = new XmlWriter();
 		$xml->openMemory(); // Store in memory, not output immediately
