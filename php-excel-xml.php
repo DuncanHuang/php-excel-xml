@@ -6,8 +6,11 @@ class ExcelXML {
 	protected $data;
 	protected $headers;
 	public $name;
+	private $_colnames;
 	
 	function __construct($name = 'Sheet1') {
+		$this->_colnames = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
+		
 		if ($name == '') $name = 'Sheet1'; // Don't allow blank
 		$this->data = array();
 		$this->headers = array();
@@ -266,6 +269,15 @@ class ExcelXML {
 			$xml->writeElement('t', $header->data);
 			$xml->endElement(); // end si
 		}
+		foreach($this->data as $row) {
+			foreach($this->headers as $hid => $header) {
+				if ($header->type == 'String' && isset($row[$hid])) {
+					$xml->startElement('si');
+					$xml->writeElement('t', $row[$hid]->data);
+					$xml->endElement(); // end si
+				}
+			}
+		}
 		$xml->endElement(); // end sst
 		$xml->endDocument();
 		$z->addFromString('xl/sharedStrings.xml', $xml->outputMemory());
@@ -288,7 +300,39 @@ class ExcelXML {
 			$xml->writeElement('v', $i); // Which string index
 			$xml->endElement(); // end c
 		}
-		$xml->endElement(); // end row		
+		$xml->endElement(); // end row
+		
+		// Draw data
+		$row_index = 2;
+		foreach($this->data as $row) {
+			$col_index = 0;
+			$previousEmpty = false;
+			$xml->startElement('row');
+			$xml->writeAttribute('r', $row_index);
+			foreach($this->headers as $hid => $header) {
+				if (!isset($row[$hid])) {
+					// This cell has no content
+					$col_index++; // Increment column count
+					continue; // Skip to next
+				}
+				$cell = $row[$hid];
+				$xml->startElement('c');
+				$xml->writeAttribute('r', $this->_colnames[$col_index].$row_index);
+				if ($header->type == 'Numeric') {
+					// Cell is numeric, just put the value
+					$xml->writeElement('v', $cell->data);
+				} else {
+					// Cell is a string, give the index
+					$xml->writeAttribute('t', 's'); // Type is 'string'
+					$xml->writeElement('v', $i); // Which string index
+					$i++; // Increment string index
+				}
+				$xml->endElement(); // end c
+				$col_index++; // Increment column count
+			}
+			$xml->endElement(); // end row
+			$row_index++; // Increment row count
+		}
 
 		$xml->endElement(); // end sheetData
 		$xml->endDocument();
