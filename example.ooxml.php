@@ -22,5 +22,5 @@ $e->addRow(array(
 ));
 
 $filename = $e->out('ooxml');
-rename($filename, './test.zip');
-copy('test.zip', 'test.xlsx');
+rename($filename, './example.zip');
+copy('example.zip', 'example.xlsx');
