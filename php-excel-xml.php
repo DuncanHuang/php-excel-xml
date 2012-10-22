@@ -180,7 +180,7 @@ class ExcelXML {
 		$this->_buildElement($xml, 'Default', array('Extension' => 'xml', 'ContentType' => 'application/xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/workbook.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/sharedStrings.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml'));
-		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
+		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/styles.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml'));
 		$this->_buildElement($xml, 'Override', array('PartName' => '/xl/worksheets/sheet1.xml', 'ContentType' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml'));
 		$this->_buildElement($xml, 'Default', array('Extension' => 'rels', 'ContentType' => 'application/vnd.openxmlformats-package.relationships+xml'));
 		$xml->endDocument(); // end Types
