@@ -164,6 +164,7 @@ class ExcelXML {
 	 * Export in the Office Open XML format
 	 *
 	 * @link http://en.wikipedia.org/wiki/Office_Open_XML
+	 * @link http://www.officeopenxml.com/anatomyofOOXML-xlsx.php
 	 * @return string filename where the temporary file was stored
 	 */
 	private function _out_ooxml($minify = false) {
@@ -227,6 +228,12 @@ class ExcelXML {
 		$this->_buildElement($xml, 'sz', array('val' => '10'));
 		$this->_buildElement($xml, 'name', array('val' => 'Arial'));
 		$xml->endElement(); // end font
+		$xml->startElement('font');
+		$xml->writeElement('u');
+		$this->_buildElement($xml, 'sz', array('val' => '10'));
+		$this->_buildElement($xml, 'color', array('rgb' => '000000FF'));
+		$this->_buildElement($xml, 'name', array('val' => 'Arial'));
+		$xml->endElement(); // end font
 		$xml->endElement(); // end fonts
 		
 		$xml->startElement('cellStyleXfs');
@@ -236,6 +243,7 @@ class ExcelXML {
 		$xml->startElement('cellXfs');
 		$this->_buildElement($xml, 'xf', array('fontId' => '0', 'xfId' => '0'));
 		$this->_buildElement($xml, 'xf', array('fontId' => '1', 'xfId' => '0', 'applyFont' => '1'));
+		$this->_buildElement($xml, 'xf', array('fontId' => '2', 'xfId' => '0', 'applyFont' => '1'));
 		$xml->endElement(); // end cellXfs
 		
 		$xml->startElement('cellStyles');
@@ -318,6 +326,7 @@ class ExcelXML {
 				$cell = $row[$hid];
 				$xml->startElement('c');
 				$xml->writeAttribute('r', $this->_colnames[$col_index].$row_index);
+				if ($cell->link !== null) $xml->writeAttribute('s', '2'); // Link color
 				if ($header->type == 'Numeric') {
 					// Cell is numeric, just put the value
 					$xml->writeElement('v', $cell->data);
@@ -335,9 +344,43 @@ class ExcelXML {
 		}
 
 		$xml->endElement(); // end sheetData
+		$xml->startElement('hyperlinks');
+		$row_index = 2;
+		foreach($this->data as $row) {
+			$col_index = 0;
+			foreach($this->headers as $hid => $header) {
+				if (!isset($row[$hid]) || $row[$hid]->link == null) continue;
+				$id = $this->_colnames[$col_index].$row_index;
+				$this->_buildElement($xml, 'hyperlink', array('ref' => $id, 'r:id' => 'link_'.$id));
+				$col_index++;
+			}
+			$row_index++;
+		}
+		$xml->endElement(); // end hyperlinks
+		$xml->endElement(); // end worksheet
 		$xml->endDocument();
 		$z->addFromString('xl/worksheets/sheet1.xml', $xml->outputMemory());
 
+		// xl/worksheets/_rels/sheet1.xml.rels
+		$xml = new XmlWriter();
+		$xml->openMemory(); // Store in memory, not output immediately
+		$xml->startDocument('1.0', 'UTF-8');
+		$xml->startElementNS(null, 'Relationships', 'http://schemas.openxmlformats.org/package/2006/relationships');
+		$row_index = 2;
+		foreach($this->data as $row) {
+			$col_index = 0;
+			foreach($this->headers as $hid => $header) {
+				if (!isset($row[$hid]) || $row[$hid]->link == null) continue;
+				$id = 'link_'.$this->_colnames[$col_index].$row_index;
+				$this->_buildElement($xml, 'Relationship', array('Id' => $id, 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink', 'Target' => $row[$hid]->link, 'TargetMode' => 'External'));
+				$col_index++;
+			}
+			$row_index++;
+		}
+		$xml->endElement(); // end Relationships
+		$xml->endDocument();
+		$z->addFromString('xl/worksheets/_rels/sheet1.xml.rels', $xml->outputMemory());
+		
 		
 		$z->close(); // Save zip
 		return $file; // Return location of file
