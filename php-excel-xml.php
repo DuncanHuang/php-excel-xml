@@ -349,7 +349,10 @@ class ExcelXML {
 		foreach($this->data as $row) {
 			$col_index = 0;
 			foreach($this->headers as $hid => $header) {
-				if (!isset($row[$hid]) || $row[$hid]->link == null) continue;
+				if (!isset($row[$hid]) || $row[$hid]->link == null) {
+					$col_index++;
+					continue;
+				}
 				$id = $this->_colnames[$col_index].$row_index;
 				$this->_buildElement($xml, 'hyperlink', array('ref' => $id, 'r:id' => 'link_'.$id));
 				$col_index++;
@@ -370,7 +373,10 @@ class ExcelXML {
 		foreach($this->data as $row) {
 			$col_index = 0;
 			foreach($this->headers as $hid => $header) {
-				if (!isset($row[$hid]) || $row[$hid]->link == null) continue;
+				if (!isset($row[$hid]) || $row[$hid]->link == null) {
+					$col_index++;
+					continue;
+				}
 				$id = 'link_'.$this->_colnames[$col_index].$row_index;
 				$this->_buildElement($xml, 'Relationship', array('Id' => $id, 'Type' => 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink', 'Target' => $row[$hid]->link, 'TargetMode' => 'External'));
 				$col_index++;
