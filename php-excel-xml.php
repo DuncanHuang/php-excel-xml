@@ -281,7 +281,8 @@ class ExcelXML {
 			foreach($this->headers as $hid => $header) {
 				if ($header->type == 'String' && isset($row[$hid])) {
 					$xml->startElement('si');
-					$xml->writeElement('t', $row[$hid]->data);
+					$data = htmlentities($row[$hid]->data, ENT_COMPAT);
+					$xml->writeElement('t', $data);
 					$xml->endElement(); // end si
 				}
 			}
